@@ -1,24 +1,24 @@
-# weekly-meetings-scheduler
+# weekly-events-scheduler
 
-**Automate your weekly meeting scheduling with Google Apps Script**
+**Automate your weekly event scheduling with Google Apps Script**
 
 This repository provides a flexible Google Apps Script that:
 
-1. **Cleans up** historical meeting events older than a configurable retention period.
-2. **Schedules** weekly meetings (e.g., MorningMeetingMon, MorningMeetingTueFri, EveningMeetingMonWed, EveningMeetingFri, WeeklyProgress) from Monday to Friday.
+1. **Cleans up** historical events older than a configurable retention period.
+2. **Schedules** weekly events (e.g., MorningEventMon, MorningEventTueFri, EveningEventMonWed, EveningEventFri, WeeklyProgress) from Monday to Friday.
 3. **Skips** days from a subscribed holiday calendar.
-4. **Reminds** users with a popup notification a configurable number of minutes before each event.
+4. **Reminds** users with customizable popup notifications before each event.
 5. **Extends** easily by modifying a single configuration object.
 
 ---
 
 ## Repository Name
 
-`weekly-meetings-scheduler`
+`weekly-events-scheduler`
 
 ## Short Description
 
-A Google Apps Script to automatically clean up old meetings, schedule upcoming week’s meetings with holiday awareness and configurable reminders, and support modular configuration for customization.
+A Google Apps Script to automatically clean up old events, schedule upcoming week's events with holiday awareness and customizable reminders, and support modular configuration for easy customization.
 
 ---
 
@@ -26,28 +26,29 @@ A Google Apps Script to automatically clean up old meetings, schedule upcoming w
 
 1. **Clone** this repository:
    ```bash
-   git clone https://github.com/<your-username>/weekly-meetings-scheduler.git
+   git clone https://github.com/<your-username>/weekly-events-scheduler.git
    ```
 2. **Open** [Google Apps Script](https://script.google.com/) and create a new project.
 3. **Copy** the contents of `src/scheduler.js` into your Apps Script editor.
 4. **Configure** the `CONFIG` object in the script:
    - `holidayCalId`: ID of your subscribed holiday calendar (e.g., `your.holiday.calendar@group.v.calendar.google.com`).
-   - `meetingCalId`: ID of your dedicated meetings calendar (fallback to default calendar if empty).
+   - `eventCalId`: ID of your dedicated events calendar (fallback to default calendar if empty).
    - `retentionDays`: Number of past days to keep before cleanup.
-   - `reminderMinutesBefore`: Minutes before event to trigger a popup reminder.
-   - `meetings`: Array of meeting definitions with names, weekdays, times, durations, and descriptions.
+   - `defaultReminderMinutes`: Default minutes before event to trigger a popup reminder.
+   - `autoScheduleMarker`: Identifier to mark auto-scheduled events (prevents accidental deletion of manual events).
+   - `events`: Array of event definitions with names, weekdays, times, durations, custom reminder times, and descriptions.
 5. **Authorize** the script when prompted to access your Google Calendars.
-6. **Run** the function `scheduleWeeklyMeetings()` manually to verify correct behavior.
+6. **Run** the function `scheduleWeeklyEvents()` manually to verify correct behavior.
 7. **Set up** a time-driven trigger:
    - Go to **Triggers** (🔔) → **Add Trigger**.
-   - Choose **`scheduleWeeklyMeetings`**, select time-driven, weekly on Monday, and a preferred hour (e.g., 8:00–9:00 AM).
+   - Choose **`scheduleWeeklyEvents`**, select time-driven, weekly on Monday, and a preferred hour (e.g., 8:00–9:00 AM).
 
 ---
 
 ## File Structure
 
 ```text
-weekly-meetings-scheduler/
+weekly-events-scheduler/
 ├── src/
 │   └── scheduler.js    # Main script with CONFIG and scheduler logic
 └── README.md           # Project documentation
@@ -59,50 +60,56 @@ weekly-meetings-scheduler/
 
 ```javascript
 /**
- * Google Apps Script: Automated Weekly Meetings Scheduler
+ * Google Apps Script: Automated Weekly Events Scheduler
  */
 
 // ===== Configuration =====
 const CONFIG = {
   holidayCalId: '<YOUR_HOLIDAY_CALENDAR_ID>',
-  meetingCalId: '<YOUR_MEETING_CALENDAR_ID>',
+  eventCalId: '<YOUR_EVENT_CALENDAR_ID>',
   retentionDays: 30,
-  reminderMinutesBefore: 3,
-  meetings: [
+  defaultReminderMinutes: 3,
+  autoScheduleMarker: "[Auto-Scheduled]",
+  events: [
     {
-      name: 'MorningMeetingMon',
+      name: 'MorningEventMon',
       days: [1],           // Monday
       time: { hour: 11, minute: 0 },
       durationMinutes: 60,
-      description: () => `Webex ID: <YOUR_WEBEX_ID>`
+      reminderMinutes: 5,  // Custom reminder (5 minutes)
+      description: () => `${CONFIG.autoScheduleMarker} Webex ID: <YOUR_WEBEX_ID>`
     },
     {
-      name: 'MorningMeetingTueFri',
+      name: 'MorningEventTueFri',
       days: [2,3,4,5],     // Tue–Fri
       time: { hour: 10, minute: 15 },
       durationMinutes: 60,
-      description: () => `Webex ID: <YOUR_WEBEX_ID>`
+      // Uses default reminder (3 minutes)
+      description: () => `${CONFIG.autoScheduleMarker} Webex ID: <YOUR_WEBEX_ID>`
     },
     {
-      name: 'EveningMeetingMonWed',
+      name: 'EveningEventMonWed',
       days: [1,2,3],       // Mon–Wed
       time: { hour: 16, minute: 0 },
       durationMinutes: 60,
-      description: () => `Webex ID: <YOUR_WEBEX_ID>`
+      reminderMinutes: 10, // Custom reminder (10 minutes)
+      description: () => `${CONFIG.autoScheduleMarker} Webex ID: <YOUR_WEBEX_ID>`
     },
     {
-      name: 'EveningMeetingFri',
+      name: 'EveningEventFri',
       days: [5],           // Friday
       time: { hour: 17, minute: 0 },
       durationMinutes: 60,
-      description: () => `Webex ID: <YOUR_WEBEX_ID>`
+      reminderMinutes: 15, // Custom reminder (15 minutes)
+      description: () => `${CONFIG.autoScheduleMarker} Webex ID: <YOUR_WEBEX_ID>`
     },
     {
       name: 'WeeklyProgress',
       days: [4],           // Thursday
       time: { hour: 16, minute: 0 },
       durationMinutes: 60,
-      description: () => `Webex ID: <YOUR_WEBEX_ID>`
+      reminderMinutes: 5,  // Custom reminder (5 minutes)
+      description: () => `${CONFIG.autoScheduleMarker} Webex ID: <YOUR_WEBEX_ID>`
     }
   ]
 };
@@ -112,11 +119,29 @@ const CONFIG = {
 
 ---
 
+## Key Features
+
+### 🔒 Safe Event Cleanup
+Uses an `autoScheduleMarker` identifier to only delete events created by the script, keeping your manually created events safe.
+
+### ⏰ Custom Reminders
+Set different reminder times for each event type:
+- Define a `defaultReminderMinutes` as fallback
+- Override with `reminderMinutes` in specific event configurations
+
+### 📅 Holiday Awareness
+Automatically skips scheduling on holidays by checking against your holiday calendar.
+
+### 🔄 Weekly Automation
+Set up once and let the script handle your recurring events every week.
+
+---
+
 ## Contributing
 
 1. Fork the repository.
 2. Create a feature branch: `git checkout -b feature/your-feature`.
-3. Commit changes: `git commit -m "Add new meeting type"`.
+3. Commit changes: `git commit -m "Add new event type"`.
 4. Push: `git push origin feature/your-feature`.
 5. Open a Pull Request.
 
@@ -125,4 +150,3 @@ const CONFIG = {
 ## License
 
 MIT © riverify
-
