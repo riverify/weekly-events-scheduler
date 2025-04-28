@@ -16,7 +16,7 @@ This repository provides a flexible Google Apps Script that:
 
 1. **Clone** this repository:
    ```bash
-   git clone https://github.com/<your-username>/weekly-events-scheduler.git
+   git clone https://github.com/riverify/weekly-events-scheduler.git
    ```
 2. **Open** [Google Apps Script](https://script.google.com/) and create a new project.
 3. **Copy** the contents of `src/scheduler.js` into your Apps Script editor.
