@@ -82,7 +82,7 @@ function cleanupOldEvents(workCal) {
   const cutoff = new Date(now);
   cutoff.setDate(now.getDate() - CONFIG.retentionDays);
 
-  /** only delete the events that description contains ${CONFIG.autoScheduleMarker} */
+  // Only delete the events that description contains ${CONFIG.autoScheduleMarker}
   const oldEvents = workCal.getEvents(new Date(0), cutoff)
     .filter(ev => {
       return CONFIG.events.some(e => ev.getTitle() === e.name) && 
