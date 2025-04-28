@@ -12,16 +12,6 @@ This repository provides a flexible Google Apps Script that:
 
 ---
 
-## Repository Name
-
-`weekly-events-scheduler`
-
-## Short Description
-
-A Google Apps Script to automatically clean up old events, schedule upcoming week's events with holiday awareness and customizable reminders, and support modular configuration for easy customization.
-
----
-
 ## Getting Started
 
 1. **Clone** this repository:
